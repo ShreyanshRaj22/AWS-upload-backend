@@ -1,7 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const path = require('path');
-
+const mongoDB = require("./db");
+mongoDB();
 const app = express();
 const port = 8080;
 var cors = require('cors')
@@ -9,21 +11,21 @@ var cors = require('cors')
 const AWS = require('aws-sdk');
 
 AWS.config.update({
-  accessKeyId: 'AKIAW3MEFRUDQS6KPIW3',
-  secretAccessKey: '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',
+  accessKeyId: process.env.ACCESS_KEY_ID,
+  secretAccessKey: process.env.SECRET_ACCESS_KEY,
   region: 'us-east-1'
 });
 
 
 app.use(cors())
-
+app.use(express.json())
 app.use(fileUpload());
 
 // Serve static files from the 'uploads' directory
 app.use(express.static(path.join(__dirname, 'uploads')));
-app.get('/health', (req,res) => {
-	console.log("Up and running!");
-	return res.status(200);
+app.get('/health', (req, res) => {
+  console.log("Up and running!");
+  return res.status(200);
 });
 
 app.post('/upload', (req, res) => {
@@ -57,6 +59,7 @@ app.post('/upload', (req, res) => {
   });
 });
 
+app.use('/api', require("./Routes/createUser"));
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
